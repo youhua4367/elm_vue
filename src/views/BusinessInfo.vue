@@ -1,10 +1,91 @@
 <script setup lang="ts">
 import {useRouter} from "vue-router";
+import {useRoute} from "vue-router";
+import {foodListService} from "@/api/food.ts";
+import {computed, onMounted, ref} from "vue";
+import type {Food} from "@/types/food.ts";
+import {businessGetOneService} from "@/api/business.ts";
+import type {BusinessInfo} from "@/types/business.ts";
+import {useCartStore} from "@/store/cart.ts";
+import { Plus, Minus } from '@element-plus/icons-vue'
 
+
+// 定义路由
+const route = useRoute()
+// 食物列表
+const foodList = ref<Food[]>([])
+// 路由获取商家 id
+const businessId = computed<number>(() => {
+    return Number(route.params.id)
+})
+// 定义商家
+const business = ref<BusinessInfo>()
+
+// 定义路由器
 const router = useRouter();
+
+// 定义购物车
+const cartStore = useCartStore();
+
+/**
+ * 添加到购物车
+ * @param food 食物对象
+ */
+const addFood = (food: Food) => {
+    cartStore.addToCart(food)
+}
+
+const removeFood = (food: Food) => {
+    cartStore.removeFromCart(food)
+}
+
+const clearFood = () => {
+    cartStore.clearCart()
+}
+
+const getQuantity = (foodId: number) => {
+    const item = cartStore.items.find(item => item.foodId === foodId);
+    return item?.quantity ?? 0
+}
+/**
+ * 返回上一界面
+ */
 const goBack = () => {
     router.go(-1)
 }
+
+/**
+ * 获取食物列表
+ */
+const getFoodList = async () => {
+    try {
+        const res = await foodListService(businessId.value);
+        if (res.code === 1) {
+            foodList.value = res.data
+        }
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+/**
+ * 获取商家信息
+ */
+const getBusinessInfo = async () => {
+    try {
+        const res = await businessGetOneService(businessId.value);
+        if (res.code === 1) {
+            business.value = res.data
+        }
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+onMounted(() => {
+    getFoodList()
+    getBusinessInfo()
+})
 </script>
 
 <template>
@@ -15,85 +96,41 @@ const goBack = () => {
         </div>
         <div class="content">
             <div class="businessInfo">
-                <img src="@/assets/img/sj01.png" alt="">
-                <div>万家饺子（软件园E18店）</div>
-                <div>&#165;15起送&#165;3配送</div>
-                <div>各种饺子炒菜</div>
+                <img :src="business?.businessImg" alt="">
+                <div>{{ business?.businessName }}</div>
+                <div>&#165;{{ business?.starPrice }}起送&#165;{{ business?.deliveryPrice }}配送</div>
+                <div>{{ business?.businessExplain }}</div>
             </div>
 
             <div class="foodList">
-                <div class="foodListMenu">
-                    <img src="@/assets/img/sp01.png" alt="">
+                <div class="foodListMenu"
+                     v-for="food in foodList"
+                     :key="food.foodId">
+                    <img :src="food.foodImg" alt="">
                     <div class="foodListForm">
                         <div class="foodListMenuInfo">
-                            <div class="foodName">纯肉鲜肉（水饺）</div>
-                            <div>新鲜猪肉</div>
-                            <div class="menuPrice">&#165;15</div>
+                            <div class="foodName">{{ food.foodName }}</div>
+                            <div>{{ food.foodExplain }}</div>
+                            <div class="menuPrice">&#165;{{ food.foodPrice }}</div>
                         </div>
                         <div class="foodListMenuInput">
-                            <button class="minus">-</button>
-                            <span class="number">0</span>
-                            <button class="plus">+</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="foodListMenu">
-                    <img src="@/assets/img/sp01.png" alt="">
-                    <div class="foodListForm">
-                        <div class="foodListMenuInfo">
-                            <div class="foodName">纯肉鲜肉（水饺）</div>
-                            <div>新鲜猪肉</div>
-                            <div class="menuPrice">&#165;15</div>
-                        </div>
-                        <div class="foodListMenuInput">
-                            <button class="minus">-</button>
-                            <span class="number">0</span>
-                            <button class="plus">+</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="foodListMenu">
-                    <img src="@/assets/img/sp01.png" alt="">
-                    <div class="foodListForm">
-                        <div class="foodListMenuInfo">
-                            <div class="foodName">纯肉鲜肉（水饺）</div>
-                            <div>新鲜猪肉</div>
-                            <div class="menuPrice">&#165;15</div>
-                        </div>
-                        <div class="foodListMenuInput">
-                            <button class="minus">-</button>
-                            <span class="number">0</span>
-                            <button class="plus">+</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="foodListMenu">
-                    <img src="@/assets/img/sp01.png" alt="">
-                    <div class="foodListForm">
-                        <div class="foodListMenuInfo">
-                            <div class="foodName">纯肉鲜肉（水饺）</div>
-                            <div>新鲜猪肉</div>
-                            <div class="menuPrice">&#165;15</div>
-                        </div>
-                        <div class="foodListMenuInput">
-                            <button class="minus">-</button>
-                            <span class="number">0</span>
-                            <button class="plus">+</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="foodListMenu">
-                    <img src="@/assets/img/sp01.png" alt="">
-                    <div class="foodListForm">
-                        <div class="foodListMenuInfo">
-                            <div class="foodName">纯肉鲜肉（水饺）</div>
-                            <div>新鲜猪肉</div>
-                            <div class="menuPrice">&#165;15</div>
-                        </div>
-                        <div class="foodListMenuInput">
-                            <button class="minus">-</button>
-                            <span class="number">0</span>
-                            <button class="plus">+</button>
+                            <!-- 减号按钮 -->
+                            <el-button
+                                size="small"
+                                circle
+                                @click="removeFood(food)"
+                                v-show="getQuantity(food.foodId) > 0"
+                            >
+                                <el-icon style="color:#00b2ff"><Minus /></el-icon>
+                            </el-button>
+
+                            <!-- 数量显示 -->
+                            <span class="number" v-show="getQuantity(food.foodId) > 0">{{ getQuantity(food.foodId) }}</span>
+
+                            <!-- 加号按钮 -->
+                            <el-button size="small" circle @click="addFood(food)" type="primary">
+                                <el-icon><Plus /></el-icon>
+                            </el-button>
                         </div>
                     </div>
                 </div>
@@ -105,11 +142,11 @@ const goBack = () => {
             <div class="footerLeft">
                 <div class="footerIcon">
                     <i class="fa fa-shopping-cart"></i>
-                    <div class="footerQty">0</div>
+                    <div class="footerQty">{{ cartStore.totalQuantity }}</div>
                 </div>
                 <div class="footerInf">
-                    <div class="footerPrice">&#165;0</div>
-                    <div>另需配送费3元</div>
+                    <div class="footerPrice">&#165;{{ cartStore.totalPrice }}</div>
+                    <div>另需配送费{{ business?.deliveryPrice }}元</div>
                 </div>
             </div>
             <div class="footerRight" id="submitBtn">
@@ -243,12 +280,19 @@ const goBack = () => {
     margin-bottom: 1vw;
 }
 
-.foodListMenuInput{
+.foodListMenuInput {
     display: flex;
     align-items: center;
-
-    padding-right: 2vw;
 }
+
+.foodListMenuInput .number {
+    width: 2.5rem;
+    text-align: center;
+    font-size: 1rem;
+    margin: 0 0.5rem;
+    background-color: white;
+}
+
 
 .foodListMenuInput button{
     border-radius: 50%;
@@ -267,12 +311,15 @@ const goBack = () => {
     font-size: 3.5vw;
     text-align: center;
     margin: 0 3vw;
-    display: none;
 }
 
+.foodListMenuInput span,
 .foodListMenuInput .minus{
     background-color: #777777;
-    display: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5vw
 }
 
 .foodListMenuInput .plus{

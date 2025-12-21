@@ -2,9 +2,16 @@
 import FooterBar from "@/components/FooterBar.vue";
 import {useRouter} from "vue-router";
 import { ref, onMounted, onUnmounted } from "vue";
+import {useBusinessStore} from "@/store/business.ts";
+import type {FoodType} from "@/types/foodType.ts";
+import {foodTypeService} from "@/api/foodType.ts";
+
+const foodType = ref<FoodType[]>([])
+const businessStore = useBusinessStore()
 
 // 绑定 DOM
 const searchRef = ref<HTMLElement | null>(null)
+const router = useRouter();
 
 // 滚动处理函数
 const handleScroll = () => {
@@ -29,22 +36,32 @@ const handleScroll = () => {
     }
 }
 
-const router = useRouter();
-
-function searchFood() {
-    let param = document.getElementById("keyWords").value;
-    alert(param);
+const showFoodType = (typeId: number) => {
+    router.push(`/list/${typeId}`)
 }
 
-function showFoodType(div) {
-    //div是触发点击事件的层
-    router.push("/List")
+const getFoodTypes = async () => {
+    try {
+        const res = await foodTypeService();
+        if (res.code === 1) {
+            foodType.value = [...res.data].sort(
+                (a, b) => a.sortOrder - b.sortOrder,
+            );
+        }
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+const getImgUrl = (baseUrl: String) => {
+    return new URL(`../assets/img/${baseUrl}`, import.meta.url).href
 }
 
 
-// 挂载时监听
 onMounted(() => {
     window.addEventListener('scroll', handleScroll)
+    businessStore.getBusinessList()
+    getFoodTypes()
 })
 
 // 卸载时移除（非常重要）
@@ -70,50 +87,17 @@ onUnmounted(() => {
                     <i class="fa fa-search" style="flex: 0 0 6vw;padding-left: 8px;padding-right: 3px"></i>
                     <input id="keyWords" type="text" placeholder="请输入要查询的内容"
                            style="flex: 10;outline: none; border: none;color: #9f9f9f">
-                    <div class="search-button" style="flex: 0 0 17vw;" onclick="searchFood()">搜索</div>
+                    <div class="search-button" style="flex: 0 0 17vw;">搜索</div>
                 </div>
             </div>
         </div>
         <div class="foodType">
-            <div class="foodTypeItem" @click="showFoodType(this)">
-                <img src="@/assets/img/dcfl01.png" height="120" width="140"/>
-                <p>美食</p>
-            </div>
-            <div class="foodTypeItem" onclick="showFoodType(this)">
-                <img src="@/assets/img/dcfl02.png" height="120" width="140"/>
-                <p>早餐</p>
-            </div>
-            <div class="foodTypeItem" onclick="showFoodType(this)">
-                <img src="@/assets/img/dcfl03.png" height="120" width="140"/>
-                <p>跑腿代购</p>
-            </div>
-            <div class="foodTypeItem" onclick="showFoodType(this)">
-                <img src="@/assets/img/dcfl04.png" height="120" width="140"/>
-                <p>汉堡披萨</p>
-            </div>
-            <div class="foodTypeItem" onclick="showFoodType(this)">
-                <img src="@/assets/img/dcfl05.png" height="120" width="140"/>
-                <p>甜品饮品</p>
-            </div>
-            <div class="foodTypeItem" onclick="showFoodType(this)">
-                <img src="@/assets/img/dcfl06.png" height="120" width="140"/>
-                <p>速食简餐</p>
-            </div>
-            <div class="foodTypeItem" onclick="showFoodType(this)">
-                <img src="@/assets/img/dcfl07.png" height="120" width="140"/>
-                <p>地方小吃</p>
-            </div>
-            <div class="foodTypeItem" onclick="showFoodType(this)">
-                <img src="@/assets/img/dcfl08.png" height="120" width="140"/>
-                <p>米粉面馆</p>
-            </div>
-            <div class="foodTypeItem" onclick="showFoodType(this)">
-                <img src="@/assets/img/dcfl09.png" height="120" width="140"/>
-                <p>包子粥铺</p>
-            </div>
-            <div class="foodTypeItem" onclick="showFoodType(this)">
-                <img src="@/assets/img/dcfl10.png" height="120" width="140"/>
-                <p>炸鸡炸串</p>
+            <div class="foodTypeItem"
+                 @click="showFoodType(type.typeId)"
+                 v-for="type in foodType"
+                 :key="type.typeId">
+                <img :src="getImgUrl(type.typeImg)" height="120" width="140" alt=""/>
+                <p>{{ type.typeName }}</p>
             </div>
         </div>
 
@@ -148,12 +132,14 @@ onUnmounted(() => {
         </div>
 
         <div class="businessList">
-            <div class="business">
-                <img src="@/assets/img/sj01.png">
+            <div class="business"
+                 v-for="business in businessStore.businessList"
+                 :key="business.businessId">
+                <img :src="business.businessImg">
 
                 <div class="businessInfo">
                     <div class="businessTitle">
-                        <h3>万家饺子（软件园E18店）</h3>
+                        <h3>{{ business.businessName }}</h3>
                         <i class="fa fa-mobile-phone"></i>
                     </div>
 
@@ -171,12 +157,12 @@ onUnmounted(() => {
                     </div>
 
                     <div class="businessPak">
-                        <p>￥15起送&nbsp;&nbsp;|&nbsp;&nbsp;￥3配送</p>
+                        <p>￥{{ business.starPrice }}起送&nbsp;&nbsp;|&nbsp;&nbsp;￥{{ business.deliveryPrice }}配送</p>
                         <p>3.22km&nbsp;&nbsp;|&nbsp;&nbsp;30分钟</p>
                     </div>
 
                     <div class="businessDescript">
-                        <p>各种饺子</p>
+                        <p>{{ business.businessExplain }}</p>
                     </div>
 
                     <div class="businessInfoPromotion">
@@ -199,423 +185,6 @@ onUnmounted(() => {
 
                 </div>
             </div>
-
-            <div class="business">
-                <img src="@/assets/img/sj01.png">
-
-                <div class="businessInfo">
-                    <div class="businessTitle">
-                        <h3>万家饺子（软件园E18店）</h3>
-                        <i class="fa fa-mobile-phone"></i>
-                    </div>
-
-                    <div class="businessSaleInf">
-                        <div class="businessSaleInfLeft">
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <p>&nbsp;4.9&nbsp;&nbsp;月售345单</p>
-                        </div>
-                        <div class="fengniaoDiver">蜂鸟专送</div>
-
-                    </div>
-
-                    <div class="businessPak">
-                        <p>￥15起送&nbsp;&nbsp;|&nbsp;&nbsp;￥3配送</p>
-                        <p>3.22km&nbsp;&nbsp;|&nbsp;&nbsp;30分钟</p>
-                    </div>
-
-                    <div class="businessDescript">
-                        <p>各种饺子</p>
-                    </div>
-
-                    <div class="businessInfoPromotion">
-                        <div class="left">
-                            <div class="icon">新</div>
-                            <p>饿了么新用户首单立减9元</p>
-                        </div>
-                        <div class="right">
-                            <p>2个活动</p>
-                            <i class="fa fa-caret-down"></i>
-                        </div>
-                    </div>
-
-                    <div class="businessInfoPromotion">
-                        <div class="left">
-                            <div class="icon" style="background-color: #F1884F">特</div>
-                            <p>特价商品5元起</p>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <div class="business">
-                <img src="@/assets/img/sj01.png">
-
-                <div class="businessInfo">
-                    <div class="businessTitle">
-                        <h3>万家饺子（软件园E18店）</h3>
-                        <i class="fa fa-mobile-phone"></i>
-                    </div>
-
-                    <div class="businessSaleInf">
-                        <div class="businessSaleInfLeft">
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <p>&nbsp;4.9&nbsp;&nbsp;月售345单</p>
-                        </div>
-                        <div class="fengniaoDiver">蜂鸟专送</div>
-
-                    </div>
-
-                    <div class="businessPak">
-                        <p>￥15起送&nbsp;&nbsp;|&nbsp;&nbsp;￥3配送</p>
-                        <p>3.22km&nbsp;&nbsp;|&nbsp;&nbsp;30分钟</p>
-                    </div>
-
-                    <div class="businessDescript">
-                        <p>各种饺子</p>
-                    </div>
-
-                    <div class="businessInfoPromotion">
-                        <div class="left">
-                            <div class="icon">新</div>
-                            <p>饿了么新用户首单立减9元</p>
-                        </div>
-                        <div class="right">
-                            <p>2个活动</p>
-                            <i class="fa fa-caret-down"></i>
-                        </div>
-                    </div>
-
-                    <div class="businessInfoPromotion">
-                        <div class="left">
-                            <div class="icon" style="background-color: #F1884F">特</div>
-                            <p>特价商品5元起</p>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <div class="business">
-                <img src="@/assets/img/sj01.png">
-
-                <div class="businessInfo">
-                    <div class="businessTitle">
-                        <h3>万家饺子（软件园E18店）</h3>
-                        <i class="fa fa-mobile-phone"></i>
-                    </div>
-
-                    <div class="businessSaleInf">
-                        <div class="businessSaleInfLeft">
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <p>&nbsp;4.9&nbsp;&nbsp;月售345单</p>
-                        </div>
-                        <div class="fengniaoDiver">蜂鸟专送</div>
-
-                    </div>
-
-                    <div class="businessPak">
-                        <p>￥15起送&nbsp;&nbsp;|&nbsp;&nbsp;￥3配送</p>
-                        <p>3.22km&nbsp;&nbsp;|&nbsp;&nbsp;30分钟</p>
-                    </div>
-
-                    <div class="businessDescript">
-                        <p>各种饺子</p>
-                    </div>
-
-                    <div class="businessInfoPromotion">
-                        <div class="left">
-                            <div class="icon">新</div>
-                            <p>饿了么新用户首单立减9元</p>
-                        </div>
-                        <div class="right">
-                            <p>2个活动</p>
-                            <i class="fa fa-caret-down"></i>
-                        </div>
-                    </div>
-
-                    <div class="businessInfoPromotion">
-                        <div class="left">
-                            <div class="icon" style="background-color: #F1884F">特</div>
-                            <p>特价商品5元起</p>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <div class="business">
-                <img src="@/assets/img/sj01.png">
-
-                <div class="businessInfo">
-                    <div class="businessTitle">
-                        <h3>万家饺子（软件园E18店）</h3>
-                        <i class="fa fa-mobile-phone"></i>
-                    </div>
-
-                    <div class="businessSaleInf">
-                        <div class="businessSaleInfLeft">
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <p>&nbsp;4.9&nbsp;&nbsp;月售345单</p>
-                        </div>
-                        <div class="fengniaoDiver">蜂鸟专送</div>
-
-                    </div>
-
-                    <div class="businessPak">
-                        <p>￥15起送&nbsp;&nbsp;|&nbsp;&nbsp;￥3配送</p>
-                        <p>3.22km&nbsp;&nbsp;|&nbsp;&nbsp;30分钟</p>
-                    </div>
-
-                    <div class="businessDescript">
-                        <p>各种饺子</p>
-                    </div>
-
-                    <div class="businessInfoPromotion">
-                        <div class="left">
-                            <div class="icon">新</div>
-                            <p>饿了么新用户首单立减9元</p>
-                        </div>
-                        <div class="right">
-                            <p>2个活动</p>
-                            <i class="fa fa-caret-down"></i>
-                        </div>
-                    </div>
-
-                    <div class="businessInfoPromotion">
-                        <div class="left">
-                            <div class="icon" style="background-color: #F1884F">特</div>
-                            <p>特价商品5元起</p>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <div class="business">
-                <img src="@/assets/img/sj01.png">
-
-                <div class="businessInfo">
-                    <div class="businessTitle">
-                        <h3>万家饺子（软件园E18店）</h3>
-                        <i class="fa fa-mobile-phone"></i>
-                    </div>
-
-                    <div class="businessSaleInf">
-                        <div class="businessSaleInfLeft">
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <p>&nbsp;4.9&nbsp;&nbsp;月售345单</p>
-                        </div>
-                        <div class="fengniaoDiver">蜂鸟专送</div>
-
-                    </div>
-
-                    <div class="businessPak">
-                        <p>￥15起送&nbsp;&nbsp;|&nbsp;&nbsp;￥3配送</p>
-                        <p>3.22km&nbsp;&nbsp;|&nbsp;&nbsp;30分钟</p>
-                    </div>
-
-                    <div class="businessDescript">
-                        <p>各种饺子</p>
-                    </div>
-
-                    <div class="businessInfoPromotion">
-                        <div class="left">
-                            <div class="icon">新</div>
-                            <p>饿了么新用户首单立减9元</p>
-                        </div>
-                        <div class="right">
-                            <p>2个活动</p>
-                            <i class="fa fa-caret-down"></i>
-                        </div>
-                    </div>
-
-                    <div class="businessInfoPromotion">
-                        <div class="left">
-                            <div class="icon" style="background-color: #F1884F">特</div>
-                            <p>特价商品5元起</p>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <div class="business">
-                <img src="@/assets/img/sj01.png">
-
-                <div class="businessInfo">
-                    <div class="businessTitle">
-                        <h3>万家饺子（软件园E18店）</h3>
-                        <i class="fa fa-mobile-phone"></i>
-                    </div>
-
-                    <div class="businessSaleInf">
-                        <div class="businessSaleInfLeft">
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <p>&nbsp;4.9&nbsp;&nbsp;月售345单</p>
-                        </div>
-                        <div class="fengniaoDiver">蜂鸟专送</div>
-
-                    </div>
-
-                    <div class="businessPak">
-                        <p>￥15起送&nbsp;&nbsp;|&nbsp;&nbsp;￥3配送</p>
-                        <p>3.22km&nbsp;&nbsp;|&nbsp;&nbsp;30分钟</p>
-                    </div>
-
-                    <div class="businessDescript">
-                        <p>各种饺子</p>
-                    </div>
-
-                    <div class="businessInfoPromotion">
-                        <div class="left">
-                            <div class="icon">新</div>
-                            <p>饿了么新用户首单立减9元</p>
-                        </div>
-                        <div class="right">
-                            <p>2个活动</p>
-                            <i class="fa fa-caret-down"></i>
-                        </div>
-                    </div>
-
-                    <div class="businessInfoPromotion">
-                        <div class="left">
-                            <div class="icon" style="background-color: #F1884F">特</div>
-                            <p>特价商品5元起</p>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <div class="business">
-                <img src="@/assets/img/sj01.png">
-
-                <div class="businessInfo">
-                    <div class="businessTitle">
-                        <h3>万家饺子（软件园E18店）</h3>
-                        <i class="fa fa-mobile-phone"></i>
-                    </div>
-
-                    <div class="businessSaleInf">
-                        <div class="businessSaleInfLeft">
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <p>&nbsp;4.9&nbsp;&nbsp;月售345单</p>
-                        </div>
-                        <div class="fengniaoDiver">蜂鸟专送</div>
-
-                    </div>
-
-                    <div class="businessPak">
-                        <p>￥15起送&nbsp;&nbsp;|&nbsp;&nbsp;￥3配送</p>
-                        <p>3.22km&nbsp;&nbsp;|&nbsp;&nbsp;30分钟</p>
-                    </div>
-
-                    <div class="businessDescript">
-                        <p>各种饺子</p>
-                    </div>
-
-                    <div class="businessInfoPromotion">
-                        <div class="left">
-                            <div class="icon">新</div>
-                            <p>饿了么新用户首单立减9元</p>
-                        </div>
-                        <div class="right">
-                            <p>2个活动</p>
-                            <i class="fa fa-caret-down"></i>
-                        </div>
-                    </div>
-
-                    <div class="businessInfoPromotion">
-                        <div class="left">
-                            <div class="icon" style="background-color: #F1884F">特</div>
-                            <p>特价商品5元起</p>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <div class="business">
-                <img src="@/assets/img/sj01.png">
-
-                <div class="businessInfo">
-                    <div class="businessTitle">
-                        <h3>万家饺子（软件园E18店）</h3>
-                        <i class="fa fa-mobile-phone"></i>
-                    </div>
-
-                    <div class="businessSaleInf">
-                        <div class="businessSaleInfLeft">
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <p>&nbsp;4.9&nbsp;&nbsp;月售345单</p>
-                        </div>
-                        <div class="fengniaoDiver">蜂鸟专送</div>
-
-                    </div>
-
-                    <div class="businessPak">
-                        <p>￥15起送&nbsp;&nbsp;|&nbsp;&nbsp;￥3配送</p>
-                        <p>3.22km&nbsp;&nbsp;|&nbsp;&nbsp;30分钟</p>
-                    </div>
-
-                    <div class="businessDescript">
-                        <p>各种饺子</p>
-                    </div>
-
-                    <div class="businessInfoPromotion">
-                        <div class="left">
-                            <div class="icon">新</div>
-                            <p>饿了么新用户首单立减9元</p>
-                        </div>
-                        <div class="right">
-                            <p>2个活动</p>
-                            <i class="fa fa-caret-down"></i>
-                        </div>
-                    </div>
-
-                    <div class="businessInfoPromotion">
-                        <div class="left">
-                            <div class="icon" style="background-color: #F1884F">特</div>
-                            <p>特价商品5元起</p>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
         </div>
 
 

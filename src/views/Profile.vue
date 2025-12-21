@@ -32,7 +32,7 @@ const getInfo = async () => {
 
 onMounted(() => {
     getInfo()
-    console.log(userInfo.value)
+
 })
 
 </script>

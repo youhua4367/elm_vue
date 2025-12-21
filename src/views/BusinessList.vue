@@ -1,18 +1,54 @@
 <script setup lang="ts">
 import FooterBar from "@/components/FooterBar.vue";
 import {useRouter} from "vue-router";
+import type {BusinessInfo} from "@/types/business.ts";
+import {computed, onMounted, ref} from "vue";
+import {useRoute} from "vue-router";
+import {businessTypeInfoService} from "@/api/business.ts";
+
+const route = useRoute()
+const typeId = computed<number>(() => {
+    return Number(route.params.id)
+})
+
+
+const businessInfo = ref<BusinessInfo[]>([])
 const router = useRouter();
+
 const goBack = () => {
     router.go(-1)
 }
+
+/**
+ * 具体的商家
+ * @param id 商家 id
+ */
 const goDetail = (id: number) => {
     if (!Number.isInteger(id)) {
         console.error("id 必须是整数");
         return;
     }
-    router.push(`/Info/${id}`)
+    router.push(`/info/${id}`)
 }
 
+/**
+ * 商家列表信息
+ * @param typeId 商家分类 id
+ */
+const getInfo = async (typeId: number) => {
+    try {
+        const res = await businessTypeInfoService(typeId);
+        if (res.code === 1) {
+            businessInfo.value = res.data;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+onMounted(() => {
+    getInfo(typeId.value)
+})
 </script>
 
 <template>
@@ -21,114 +57,23 @@ const goDetail = (id: number) => {
             <div class="return" @click="goBack"><&nbsp;</div>
             <p>商家列表</p>
         </div>
+
         <div class="business">
-            <div class="businessItem" @click="goDetail(1)">
+            <div class="businessItem"
+                 v-for="business in businessInfo"
+                 @click="goDetail(business.businessId)"
+                :key="business.businessId">
                 <div class="businessImg">
-                    <img src="@/assets/img/sj02.png">
+                    <img :src="business.businessImg">
                     <div class="businessQty">3</div>
                 </div>
                 <div class="businessInfo">
-                    <h3>小锅饭豆腐店（全运店）</h3>
-                    <p>￥15起送&nbsp;&nbsp;|&nbsp;&nbsp;￥3配送</p>
-                    <p>特色美食</p>
+                    <h3>{{ business.businessName }}</h3>
+                    <p>￥{{ business.starPrice }}起送&nbsp;&nbsp;|&nbsp;&nbsp;￥{{ business.deliveryPrice }}配送</p>
+                    <p>{{ business.businessExplain }}</p>
                 </div>
             </div>
 
-            <div class="businessItem">
-                <div class="businessImg">
-                    <img src="@/assets/img/sj02.png">
-                    <div class="businessQty">3</div>
-                </div>
-                <div class="businessInfo">
-                    <h3>小锅饭豆腐店（全运店）</h3>
-                    <p>￥15起送&nbsp;&nbsp;|&nbsp;&nbsp;￥3配送</p>
-                    <p>特色美食</p>
-                </div>
-            </div>
-
-            <div class="businessItem">
-                <div class="businessImg">
-                    <img src="@/assets/img/sj02.png">
-                    <div class="businessQty">3</div>
-                </div>
-                <div class="businessInfo">
-                    <h3>小锅饭豆腐店（全运店）</h3>
-                    <p>￥15起送&nbsp;&nbsp;|&nbsp;&nbsp;￥3配送</p>
-                    <p>特色美食</p>
-                </div>
-            </div>
-
-            <div class="businessItem">
-                <div class="businessImg">
-                    <img src="@/assets/img/sj02.png">
-                    <div class="businessQty">3</div>
-                </div>
-                <div class="businessInfo">
-                    <h3>小锅饭豆腐店（全运店）</h3>
-                    <p>￥15起送&nbsp;&nbsp;|&nbsp;&nbsp;￥3配送</p>
-                    <p>特色美食</p>
-                </div>
-            </div>
-
-            <div class="businessItem">
-                <div class="businessImg">
-                    <img src="@/assets/img/sj02.png">
-                    <div class="businessQty">3</div>
-                </div>
-                <div class="businessInfo">
-                    <h3>小锅饭豆腐店（全运店）</h3>
-                    <p>￥15起送&nbsp;&nbsp;|&nbsp;&nbsp;￥3配送</p>
-                    <p>特色美食</p>
-                </div>
-            </div>
-
-            <div class="businessItem">
-                <div class="businessImg">
-                    <img src="@/assets/img/sj02.png">
-                    <div class="businessQty">3</div>
-                </div>
-                <div class="businessInfo">
-                    <h3>小锅饭豆腐店（全运店）</h3>
-                    <p>￥15起送&nbsp;&nbsp;|&nbsp;&nbsp;￥3配送</p>
-                    <p>特色美食</p>
-                </div>
-            </div>
-
-            <div class="businessItem">
-                <div class="businessImg">
-                    <img src="@/assets/img/sj02.png">
-                    <div class="businessQty">3</div>
-                </div>
-                <div class="businessInfo">
-                    <h3>小锅饭豆腐店（全运店）</h3>
-                    <p>￥15起送&nbsp;&nbsp;|&nbsp;&nbsp;￥3配送</p>
-                    <p>特色美食</p>
-                </div>
-            </div>
-
-            <div class="businessItem">
-                <div class="businessImg">
-                    <img src="@/assets/img/sj02.png">
-                    <div class="businessQty">3</div>
-                </div>
-                <div class="businessInfo">
-                    <h3>小锅饭豆腐店（全运店）</h3>
-                    <p>￥15起送&nbsp;&nbsp;|&nbsp;&nbsp;￥3配送</p>
-                    <p>特色美食</p>
-                </div>
-            </div>
-
-            <div class="businessItem">
-                <div class="businessImg">
-                    <img src="@/assets/img/sj02.png">
-                    <div class="businessQty">3</div>
-                </div>
-                <div class="businessInfo">
-                    <h3>小锅饭豆腐店（全运店）</h3>
-                    <p>￥15起送&nbsp;&nbsp;|&nbsp;&nbsp;￥3配送</p>
-                    <p>特色美食</p>
-                </div>
-            </div>
         </div>
 
         <div style="margin-bottom: 11vw">&nbsp;</div>
