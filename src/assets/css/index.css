@@ -1,0 +1,327 @@
+/*总容器样式*/
+.wrapper {
+    width: 100%;
+    height: 100%;
+    /*overflow: auto;*/
+    margin: 0;
+}
+
+/*头部样式*/
+.header {
+    display: flex;
+    height: 12vw;
+    width: 100%;
+    background-color: #17BAF9;
+    align-items: center;
+}
+
+.icon-location-box {
+    height: 8vw;
+    width: 8vw;
+    margin: 1vw 3vw 3vw 3vw;
+}
+
+.icon-location {
+    border-radius: 50% 50% 50% 0;
+    background-color: white;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-45deg);
+    position: relative;
+}
+
+.icon-location:after {
+    content: "";
+    width: 40%;
+    height: 40%;
+    background-color: #0097FF;
+    position: absolute;
+    margin: 30% 0 0 30%;
+    border-radius: 50%;
+}
+
+.location-text {
+    font-size: 4.5vw;
+    color: white;
+    font-weight: bold;
+}
+
+/*搜索栏样式*/
+.search {
+    width: 100%;
+    height: 10vw;
+    /*position: sticky;*/
+    /*top: 0;*/
+    /*z-index: 10;*/
+}
+
+.search input {
+    display: flex;
+    font-size: 5vw;
+}
+
+.search-box {
+    display: flex;
+    width: 100%;
+    height: 10vw;
+    justify-content: center;
+    background-color: white;
+    /*align-items: center;*/
+}
+
+.search-panel {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border-radius: 25px;
+    border: 2px solid #17BAF9;
+    height: 8vw;
+    width: 97%;
+
+    font-size: 5vw;
+    color: #9f9f9f;
+
+}
+
+.search-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #17BAF9;
+    color: white;
+    border-radius: 23px;
+    height: 8vw;
+    font-size: 4vw;
+    cursor: pointer;
+}
+
+/*食物类别*/
+.foodType {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+}
+
+.foodTypeItem {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    cursor: pointer;
+    width: 18vw;
+    height: 20vw;
+}
+
+.foodTypeItem img {
+    width: 12vw;
+    height: 10vw;
+}
+
+.foodTypeItem p {
+    color: #656464;
+    font-size: 3.5vw;
+    margin: 0;
+}
+
+
+/*广告*/
+.banner {
+    width: 91vw;
+    height: 29vw;
+    background-image: url("../img/img/index_banner.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    margin-left: 4vw;
+}
+
+/*会员*/
+.member {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 95%;
+    border-radius: 2px;
+    border: 2px solid #17BAF9;
+    background-color: #FEEDC1;
+    height: 11.5vw;
+}
+
+.member img {
+    width: 6vw;
+    height: 6vw;
+    margin-left: 4vw;
+}
+
+.member .left {
+    display: flex;
+    align-items: center;
+
+}
+
+.member .right {
+    margin-right: 4vw;
+}
+
+/*推荐商家样式*/
+.recommend {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.recommend-line {
+    height: 0.2vw;
+    width: 6vw;
+    background-color: #888888;
+    margin-left: 3vw;
+    margin-right: 3vw;
+}
+
+.recommendType {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 3.5vw;
+    color: #555555;
+}
+
+/*商家样式*/
+.businessList {
+    display: flex;
+    flex-direction: column;
+}
+
+.businessList img {
+    width: 20vw;
+    height: 20vw;
+}
+
+.businessList .business {
+    padding: 2.5vw;
+    display: flex;
+
+    border-bottom: 1px solid #555555;
+}
+
+.businessInfo {
+    color: #666666;
+    font-size: 3.2vw;
+    margin-left: 3vw;
+    flex: 9;
+    line-height: 0;
+}
+
+.businessTitle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.businessTitle h3 {
+    font-size: 4vw;
+    color: #333333;
+}
+
+.businessSaleInf {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.businessSaleInfLeft {
+    display: flex;
+    align-items: center;
+}
+
+.businessSaleInfLeft i {
+    color: #FEC80E;
+}
+
+.fengniaoDiver {
+    color: white;
+    background-color: #0097FF;
+    font-size: 2.4vw;
+    padding: 0.5vw;
+    border-radius: 2px;
+    line-height: 1;
+}
+
+.businessPak {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.businessDescript {
+    display: flex;
+    align-items: center;
+}
+
+.businessInfoPromotion {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.businessInfoPromotion .left, .right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.businessInfoPromotion .left .icon {
+    background-color: #70BC47;
+    line-height: 1.5;
+    width: 4vw;
+    height: 4vw;
+    border-radius: 3px;
+    color: white;
+    margin-right: 2vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/*底部样式*/
+.footer {
+    width: 100%;
+    display: flex;
+    height: 12vw;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #ffffff;
+    border-top: 2px solid #656464;
+
+    position: fixed;
+    left: 0;
+    bottom: 0;
+}
+
+
+.footer div {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    justify-content: center;
+    color: #656464;
+    padding-top: 2vw;
+}
+
+.footer >div:nth-child(1) {
+    padding-left: 1vw;
+}
+
+.footer >div:nth-child(4) {
+    padding-right: 1vw;
+}
+
+.footer i {
+    font-size: 4.5vw;
+}
+
+.footer p {
+    font-size: 2.5vw;
+}
