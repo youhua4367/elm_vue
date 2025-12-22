@@ -3,8 +3,6 @@ import type {ApiResponse} from "@/types/api.ts";
 import type {LoginData, RegisterData} from "@/types/user.ts";
 
 
-
-
 export const userRegisterService = (registerData: RegisterData): Promise<ApiResponse> => {
     
     return request.post("/user/user/register", registerData)

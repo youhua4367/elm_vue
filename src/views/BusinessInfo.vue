@@ -31,18 +31,21 @@ const cartStore = useCartStore();
  * 添加到购物车
  * @param food 食物对象
  */
-const addFood = (food: Food) => {
-    cartStore.addToCart(food)
+const addFood = async (food: Food) => {
+    await cartStore.addToCart({foodId:food.foodId, businessId:businessId.value});
 }
-
+/**
+ * 移除购物车
+ * @param food 食物
+ */
 const removeFood = (food: Food) => {
-    cartStore.removeFromCart(food)
+    cartStore.subFromCart({foodId:food.foodId, businessId:businessId.value});
 }
 
-const clearFood = () => {
-    cartStore.clearCart()
-}
-
+/**
+ * 获取数量
+ * @param foodId 食物id
+ */
 const getQuantity = (foodId: number) => {
     const item = cartStore.items.find(item => item.foodId === foodId);
     return item?.quantity ?? 0
@@ -82,9 +85,18 @@ const getBusinessInfo = async () => {
     }
 }
 
+const checkout = () => {
+    router.push({path:'/checkout', query: {
+            id: String(businessId.value),
+        }});
+}
+
+
 onMounted(() => {
     getFoodList()
     getBusinessInfo()
+    cartStore.getCart()
+
 })
 </script>
 
@@ -149,7 +161,7 @@ onMounted(() => {
                     <div>另需配送费{{ business?.deliveryPrice }}元</div>
                 </div>
             </div>
-            <div class="footerRight" id="submitBtn">
+            <div class="footerRight" id="submitBtn" @click="checkout">
                 去结算
             </div>
         </div>

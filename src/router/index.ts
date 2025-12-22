@@ -9,10 +9,11 @@ const routes: RouteRecordRaw[] = [
     {path: '/info/:id', component: () => import('@/views/BusinessInfo.vue')},
     {path: '/order', component: () => import('@/views/HistoryOrder.vue')},
     {path: '/login', component: () => import('@/views/Login.vue')},
-    {path: '/order-list', component: () => import('@/views/OrderList.vue')},
+    {path: '/checkout', component: () => import('@/views/OrderList.vue'), meta: { showFooter: false }},
     {path: '/payment/:orderId', component: () => import('@/views/Payment.vue')},
     {path: '/profile', component: () => import('@/views/Profile.vue')},
-    {path: '/register', component: () => import('@/views/Register.vue')}
+    {path: '/register', component: () => import('@/views/Register.vue')},
+    {path: '/address', component: () => import('@/views/Address.vue'), meta: { showFooter: false }},
 ]
 const router= createRouter({
     routes: routes,

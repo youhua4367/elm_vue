@@ -1,10 +1,43 @@
 <script setup lang="ts">
 import {useRouter} from "vue-router";
+import {useRoute} from "vue-router";
+import {computed, onMounted, ref} from "vue";
+import type {BusinessInfo} from "@/types/business.ts";
+import {businessGetOneService} from "@/api/business.ts";
+import {useCartStore} from "@/store/cart.ts";
 
+const route = useRoute();
+const businessId = computed(() => Number(route.query.id));
+console.log(businessId);
 const router = useRouter();
+
+const businessInfo = ref<BusinessInfo>();
+
+// 定义购物车
+const cartStore = useCartStore();
+/**
+ * 获取商家信息
+ */
+const getBusinessInfo = async () => {
+    try {
+        const res = await businessGetOneService(businessId.value);
+        if (res.code === 1) {
+            businessInfo.value = res.data
+        }
+    } catch (error) {
+        console.log(error)
+    }
+}
+
 const goBack = () => {
     router.go(-1)
 }
+
+
+onMounted(() => {
+    getBusinessInfo()
+    cartStore.getCart()
+})
 </script>
 
 <template>
@@ -24,23 +57,25 @@ const goBack = () => {
         </div>
 
         <div class="businessInfo">
-            <div>万家饺子&nbsp;（软件园E18店）</div>
+            <div>{{ businessInfo?.businessName }}</div>
         </div>
         <hr>
 
         <div class="orderItem">
-            <!--            <div class="orderItemList">-->
-            <!--                <img src="./img/img/sp01.png" alt="">-->
-            <!--                <div class="orderItemListInfo">-->
-            <!--                    <div>纯肉鲜肉（水饺）&nbsp;×2</div>-->
-            <!--                    <div>￥15</div>-->
-            <!--                </div>-->
-            <!--            </div>-->
+            <div class="orderItemList"
+                 v-for="item in cartStore.items"
+                 :key="item.cartId">
+                <img :src="item.img" alt="">
+                <div class="orderItemListInfo">
+                    <div>{{ item.name }}&nbsp;×{{ item.quantity }}</div>
+                    <div>￥{{ item.amount }}</div>
+                </div>
+            </div>
         </div>
 
         <div class="deliveryFee">
             <div>配送费</div>
-            <div class="fee">￥3</div>
+            <div class="fee">￥{{ businessInfo?.deliveryPrice }}</div>
         </div>
 
         <div class="footer">
@@ -58,6 +93,7 @@ const goBack = () => {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+
 }
 
 /*标题头*/
@@ -70,6 +106,8 @@ const goBack = () => {
     background-color: #00b2ff;
     height: 25vw;
     width: 100%;
+
+
 
 }
 

@@ -14,6 +14,7 @@ import "./assets/main.scss"
 import "normalize.css"
 import "@/assets/css/global.css"
 import "font-awesome/css/font-awesome.min.css"
+import "font-awesome/css/font-awesome.css"
 
 const app = createApp(App)
 const pinia = createPinia()

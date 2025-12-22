@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import FooterBar from "@/components/FooterBar.vue";
+import { useRoute } from "vue-router";
+
+const route = useRoute();
 </script>
 
 <template>
     <div class="container">
         <router-view></router-view>
-        <FooterBar />   <!-- 固定底部导航 -->
+        <FooterBar v-if="route.meta.showFooter !== false" />   <!-- 固定底部导航 -->
     </div>
 </template>
 

@@ -1,53 +1,74 @@
-import {defineStore} from "pinia";
-import type {CartItem} from "@/types/cart.ts";
-import type {Food} from "@/types/food.ts";
+import { defineStore } from "pinia";
+import {computed, ref} from "vue";
+import type {Cart, CartItem} from "@/types/cart";
+import {
+    cartAddService,
+    cartSubService,
+    cartGetService,
+    cartCleanService
+} from "@/api/cart";
 
-
-export const useCartStore = defineStore("cart", {
-    state: () => ({
-        items: [] as CartItem[],
-    }),
-    getters: {
-       totalQuantity: (state) =>
-            state.items.reduce((sum, item) => sum + item.quantity, 0),
-       
-       totalPrice: (state) =>
-            state.items.reduce((sum, item) => sum + item.quantity * item.foodPrice, 0),
-    },
-    actions: {
-        // 添加到购物车 +1
-        addToCart(food:Food) {
-            const item = this.items.find((it) => it.foodId === food.foodId);
-            if (item) {
-                // 存在此商品则数量 +1
-                item.quantity += 1;
-            } else {
-                // 不存在此商品则添加
-                this.items.push({
-                    foodId: food.foodId,
-                    foodName: food.foodName,
-                    foodPrice: food.foodPrice,
-                    quantity: 1
-                })
+export const useCartStore = defineStore("cart", () => {
+    // 购物车列表
+    const items = ref<Cart[]>([]);
+    
+    // 总数量
+    const totalQuantity = computed(() => {
+        return items.value.reduce((sum, item) => sum + item.quantity, 0);
+    });
+    
+    // 总金额
+    const totalPrice = computed(() => {
+        return items.value.reduce((sum, item) => sum + item.amount, 0);
+    });
+    
+    // 获取购物车列表
+    const getCart = async () => {
+        try {
+            const res = await cartGetService();
+            if (res.code === 1) {
+                items.value = res.data; // 后端返回的购物车列表
             }
-        },
-        // 移除购物车 -1
-        removeFromCart(food:Food) {
-            const item = this.items.find((it) => it.foodId === food.foodId);
-            if (item) {
-                item.quantity -= 1;
-            } else {
-                this.items = this.items.filter(it => it.foodId === food.foodId);
-            }
-        },
-        // 移除商品
-        deleteItem(foodId:number) {
-            this.items.filter(it => it.foodId !== foodId);
-        },
-        // 清空购物车
-        clearCart() {
-            this.items = []
+        } catch (error) {
+            console.error(error);
         }
-    },
-    persist:true,
-})
+    };
+    
+    // 添加商品
+    const addToCart = async (cartItem: CartItem) => {
+        try {
+            const res = await cartAddService(cartItem);
+            if (res.code === 1) {
+                await getCart(); // 更新购物车
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+    
+    // 减少商品
+    const subFromCart = async (cartItem: CartItem) => {
+        try {
+            const res = await cartSubService(cartItem);
+            if (res.code === 1) {
+                await getCart();
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+    
+    // 清空购物车
+    const clearCart = async () => {
+        try {
+            const res = await cartCleanService();
+            if (res.code === 1) {
+                items.value = [];
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+    
+    return { items, totalQuantity, totalPrice, getCart, addToCart, subFromCart, clearCart };
+});

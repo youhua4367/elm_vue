@@ -28,6 +28,10 @@ export const useBusinessStore = defineStore('business', () => {
         return businessList.value.filter(b => b.orderTypeId === typeId)
     }
     
+    const getByBusinessId = (businessId: number) => {
+        return businessList.value.filter(b => b.businessId === businessId)[0]
+    }
+    
     // 清空（登出用）
     const removeBusiness = () => {
         businessList.value = []
@@ -39,5 +43,6 @@ export const useBusinessStore = defineStore('business', () => {
         getBusinessList,
         getByType,
         removeBusiness,
+        getByBusinessId,
     }
 })
