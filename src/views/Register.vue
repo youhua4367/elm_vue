@@ -2,8 +2,9 @@
 import { reactive, ref } from 'vue'
 import FooterBar from "@/components/FooterBar.vue";
 import {ElMessage, type FormInstance} from 'element-plus'
-import { userRegisterService } from "@/api/user.ts"
+import {userAuthService, userRegisterService} from "@/api/user.ts"
 import {useRouter} from "vue-router";
+import type {UserAuth} from "@/types/user.ts";
 
 const router = useRouter()
 // 表单数据
@@ -11,9 +12,14 @@ const form = reactive({
     username: '',
     password: '',
     rePassword: '',
-    nickname: '',
-    sex: '',
+    authInfo: '',
 })
+
+const userAuth = ref<UserAuth>({
+    authInfo: '',
+    authKey: ''
+})
+
 
 // 获取表单实例
 const formRef = ref<FormInstance>()
@@ -55,33 +61,48 @@ const rules = {
 // 提交
 const onSubmit = async () => {
     try {
-        // 1. 表单校验
         await formRef.value?.validate()
 
-        // 2. 调用注册接口
+        if (!userAuth.value.authKey) {
+            ElMessage.warning('请输入验证码')
+            return
+        }
+
         const res = await userRegisterService({
             userId: form.username,
             password: form.password,
             rePassword: form.rePassword,
-            userName: form.nickname,
-            userSex: form.sex === 'male' ? 1 : 0
+            authInfo: form.authInfo,
+            authKey: userAuth.value.authKey,
         })
 
-        console.log(res)
-        // 3. 处理返回结果
         if (res.code === 1) {
             ElMessage.success('注册成功！')
             await router.push('/login')
         } else {
-            ElMessage.error(res.data.msg || '注册失败')
+            ElMessage.error(res.msg || '注册失败')
         }
-
     } catch (err) {
-        // 校验失败 or 接口异常
         console.log(err)
         ElMessage.error('请正确填写注册信息')
     }
 }
+
+const getAuth = async () => {
+    try {
+        const res = await userAuthService()
+        if (res.code === 1) {
+            userAuth.value = res.data
+            ElMessage.success("获取验证码成功")
+        } else {
+            ElMessage.error('获取验证码失败')
+        }
+    } catch (error) {
+        console.error(error)
+        ElMessage.error('获取验证码失败')
+    }
+}
+
 </script>
 
 <template>
@@ -98,28 +119,21 @@ const onSubmit = async () => {
                 <el-form-item label="再次输入密码" prop="rePassword">
                     <el-input v-model="form.rePassword" type="password" show-password />
                 </el-form-item>
-                <el-form-item label="姓名" prop="nickname">
-                    <el-input v-model="form.nickname" />
-                </el-form-item>
-                <el-form-item label="性别" prop="sex">
-                    <el-radio-group v-model="form.sex">
-                        <el-radio value="male">男</el-radio>
-                        <el-radio value="female">女</el-radio>
-                    </el-radio-group>
+                <el-form-item label="验证码" prop="authInfo">
+                    <el-input v-model="form.authInfo" style="width: 60%;" />
+                    <el-button type="primary" @click="getAuth" style="margin-left: 10px;">获取验证码</el-button>
                 </el-form-item>
                 <el-form-item>
                     <el-button type="primary" @click="onSubmit">注册</el-button>
-                    <el-button>取消</el-button>
+                    <el-button @click="router.push('/login')">取消</el-button>
                 </el-form-item>
             </el-form>
         </div>
-
         <div style="margin-bottom: 11vw">&nbsp;</div>
         <div>&nbsp;</div>
         <FooterBar />
     </div>
 </template>
-
 
 <style scoped>
 .wrapper{
@@ -155,7 +169,7 @@ const onSubmit = async () => {
     flex-direction: column;
     align-items: center;
     width: 100%;
-
+    margin-top: 10vh;
     padding: 2vw 0;
 }
 

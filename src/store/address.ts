@@ -8,13 +8,14 @@ import {
     addressGetDefaultService,
     addressSetDefaultService,
     addressAddService,
-    addressChangeByIdService
+    addressChangeByIdService, addressGetCurrentService
 } from "@/api/address.ts";
 
 export const useAddressStore = defineStore("address", () => {
     const address = ref<Address>();
     const addresses = ref<Address[]>([]);
     const defaultAddress = ref<Address | null>(null);
+    const currentAddress = ref<Address | null>(null);
     
     // 获取地址列表
     const getAddresses = async () => {
@@ -34,11 +35,13 @@ export const useAddressStore = defineStore("address", () => {
             const res = await addressGetDefaultService();
             if (res.code === 1) {
                 defaultAddress.value = res.data;
+                currentAddress.value = res.data;
             }
         } catch (error) {
             console.error(error);
         }
     };
+    
     
     // 新增地址
     const addAddress = async (address: Address) => {
@@ -100,10 +103,23 @@ export const useAddressStore = defineStore("address", () => {
         }
     }
     
+    // 获取目前的地址
+    const getCurrentAddress = async (position: string) => {
+        try {
+            const res = await addressGetCurrentService(position);
+            if (res.code === 1) {
+                currentAddress.value = res.data.address;
+            }
+        }catch (error) {
+            console.error(error);
+        }
+    }
+    
     return {
         addresses,
         defaultAddress,
         address,
+        currentAddress,
         getAddresses,
         getDefaultAddress,
         addAddress,
@@ -111,5 +127,6 @@ export const useAddressStore = defineStore("address", () => {
         deleteAddress,
         setDefaultAddress,
         getAddressById,
+        getCurrentAddress
     };
 });

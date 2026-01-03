@@ -1,5 +1,39 @@
 <script setup lang="ts">
 import FooterBar from "@/components/FooterBar.vue";
+import {useOrderStore} from "@/store/order.ts";
+import {useBusinessStore} from "@/store/business.ts";
+import {useRoute} from "vue-router";
+import {computed, onMounted} from "vue";
+import {ElMessage} from "element-plus";
+import {useRouter} from "vue-router";
+
+const router = useRouter();
+const route = useRoute();
+const orderStore = useOrderStore();
+const businessStore = useBusinessStore();
+
+const currentOrder = orderStore.currentOrder;
+const orderId = computed(() => {
+    return Number(route.params.id);
+})
+
+const getOrderDetail = async () => {
+    await orderStore.getOrderDetail(orderId.value);
+    const orderDetail = orderStore.currentOrderDetail;
+    const businessId = orderDetail[0]?.businessId || 0;
+    // 获取到当前的商家
+    businessStore.getByBusinessId(businessId);
+}
+
+const payOrder = async () => {
+    await orderStore.payOrder(orderId.value);
+    ElMessage.success("支付成功!")
+    await router.push("/home")
+}
+
+onMounted(() => {
+    getOrderDetail();
+})
 </script>
 
 <template>
@@ -8,25 +42,25 @@ import FooterBar from "@/components/FooterBar.vue";
         <div class="header">在线支付</div>
 
         <div class="paymentInfo">
-            <div class="paymentInfoTitle">订单信息：</div>
+            <div class="paymentInfoTitle">订单信息：{{ currentOrder?.orderNumber }}</div>
             <div class="paymentInfoContent">
-                <div>万家饺子（软件园E18店）</div>
-                <div class="finalBill">￥49</div>
+                <div>{{ businessStore.currentBusiness?.businessName }}</div>
+                <div class="finalBill">￥{{ currentOrder?.orderAmount }}</div>
             </div>
         </div>
 
         <div class="paymentItem">
-            <div class="paymentItemInfo">
-                <div>纯肉鲜肉（水饺）&nbsp;×2</div>
-                <div>￥15</div>
+            <div class="paymentItemInfo"
+                 v-for="detail in orderStore.currentOrderDetail"
+                 :key="detail.odId">
+                <img :src="detail.img" alt="" width="40px" height="40px">
+                <div>{{ detail.name }}）&nbsp;×{{ detail.quantity }}</div>
+                <div>￥{{ detail.amount }}</div>
             </div>
-            <div class="paymentItemInfo">
-                <div>玉米鲜肉（水饺）&nbsp;×1</div>
-                <div>￥16</div>
-            </div>
+
             <div class="paymentItemInfo">
                 <div>配送费</div>
-                <div>￥3</div>
+                <div>￥{{ businessStore.currentBusiness?.deliveryPrice }}</div>
             </div>
         </div>
 
@@ -51,7 +85,7 @@ import FooterBar from "@/components/FooterBar.vue";
         </div>
 
         <div class="paymentConfirm">
-            <div class="paymentConfirmInfo">确认支付</div>
+            <div class="paymentConfirmInfo" @click="payOrder">确认支付</div>
         </div>
 
         <div style="margin-bottom: 11vw">&nbsp;</div>
@@ -216,47 +250,5 @@ import FooterBar from "@/components/FooterBar.vue";
 
     background-color: #38CA73;
 
-}
-
-/*底部样式*/
-.footer {
-    width: 100%;
-    display: flex;
-    height: 12vw;
-    align-items: center;
-    justify-content: space-between;
-    background-color: #ffffff;
-    border-top: 2px solid #656464;
-
-    position: fixed;
-    left: 0;
-    bottom: 0;
-}
-
-
-.footer div {
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-content: center;
-    justify-content: center;
-    color: #656464;
-    padding-top: 2vw;
-}
-
-.footer >div:nth-child(1) {
-    padding-left: 1vw;
-}
-
-.footer >div:nth-child(4) {
-    padding-right: 1vw;
-}
-
-.footer i {
-    font-size: 4.5vw;
-}
-
-.footer p {
-    font-size: 2.5vw;
 }
 </style>

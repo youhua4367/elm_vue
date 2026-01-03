@@ -1,7 +1,28 @@
 <script setup lang="ts">
 import {useRouter} from "vue-router";
 import {useAddressStore} from "@/store/address.ts";
-import {onMounted} from "vue";
+import {onMounted, reactive, ref} from "vue";
+import type { Address } from "@/types/address";
+
+// 定义地址提交表单对象
+const form: Address = reactive({
+    addressId: 0,
+    userId: "",
+    name: "",
+    phone: "",
+    sex: 0,
+    provinceCode: "",
+    cityCode: "",
+    districtCode: "",
+    provinceName: "",
+    cityName: "",
+    districtName: "",
+    detail: "",
+    label: "",
+    isDefault: 0
+})
+const dialogFormVisible = ref(false)
+const formLabelWidth = "20vw"
 
 const router = useRouter();
 const addressStore = useAddressStore();
@@ -14,7 +35,7 @@ const getAddress = () => {
     addressStore.getAddresses()
 }
 
-onMounted(() => {
+onMounted( () => {
     getAddress()
 })
 </script>
@@ -25,7 +46,7 @@ onMounted(() => {
             <el-row class="header">
                 <div @click="goBack"><i class="fa fa-angle-left"></i></div>
                 <div class="my-address">收货地址</div>
-                <div class="add-address">新增地址</div>
+                <div class="add-address" @click="dialogFormVisible=true">新增地址</div>
                 <el-divider />
 
             </el-row>
@@ -46,8 +67,24 @@ onMounted(() => {
                 <div class="right"><i class="fa fa-pencil"></i></div>
                 <el-divider />
             </el-row>
+            <el-dialog v-model="dialogFormVisible" title="修改地址簿" width="500">
+                <el-form :model="form">
+                    <el-form-item label="Promotion name" :label-width="formLabelWidth">
+                        <el-input v-model="form.provinceName" autocomplete="off" />
+                    </el-form-item>
+                </el-form>
 
+                <template #footer>
+                    <div class="dialog-footer">
+                        <el-button @click="dialogFormVisible = false">取消</el-button>
+                        <el-button type="primary" @click="dialogFormVisible = false">
+                            确定
+                        </el-button>
+                    </div>
+                </template>
+            </el-dialog>
         </el-card>
+        <div id="container"></div>
     </el-container>
 </template>
 

@@ -95,7 +95,7 @@ const checkout = () => {
 onMounted(() => {
     getFoodList()
     getBusinessInfo()
-    cartStore.getCart()
+    cartStore.getCart(businessId.value)
 
 })
 </script>

@@ -23,11 +23,13 @@ export const useCartStore = defineStore("cart", () => {
     });
     
     // 获取购物车列表
-    const getCart = async () => {
+    const getCart = async (businessId: number) => {
         try {
             const res = await cartGetService();
+            const temp = ref<(Cart[])> ([])
             if (res.code === 1) {
-                items.value = res.data; // 后端返回的购物车列表
+                temp.value = res.data
+                items.value = temp.value.filter(c => c.businessId === businessId)
             }
         } catch (error) {
             console.error(error);
@@ -39,7 +41,7 @@ export const useCartStore = defineStore("cart", () => {
         try {
             const res = await cartAddService(cartItem);
             if (res.code === 1) {
-                await getCart(); // 更新购物车
+                await getCart(cartItem.businessId); // 更新购物车
             }
         } catch (error) {
             console.error(error);
@@ -51,7 +53,7 @@ export const useCartStore = defineStore("cart", () => {
         try {
             const res = await cartSubService(cartItem);
             if (res.code === 1) {
-                await getCart();
+                await getCart(cartItem.businessId);
             }
         } catch (error) {
             console.error(error);

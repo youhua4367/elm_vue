@@ -3,22 +3,70 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTokenStore } from '@/store/token'
 import { ElMessage, ElMessageBox, ElAvatar } from 'element-plus'
-import { userInfoService } from '@/api/user.ts'
+import {userInfoService, userUpdateService} from '@/api/user.ts'
 import type { UserInfo } from '@/types/user.ts'
 
+
+const avatarInput = ref<HTMLInputElement | null>(null)
 // 静态导入头像图片
 import defaultAvatar from '@/assets/img/avatar.png'
+import {uploadFileService} from "@/api/common.ts";
+
 
 const router = useRouter()
 const tokenStore = useTokenStore()
 const userInfo = ref<UserInfo | null>(null)
 
+/**
+ * 登出
+ */
 const logout = async () => {
     await ElMessageBox.confirm('确定退出登录？', '提示')
     tokenStore.removeToken()
-    router.replace('/login')
+    await router.replace('/login')
 }
 
+/**
+ * 文件上传
+ * @param event 事件
+ */
+const handleAvatarChange = async (event: Event) => {
+    const target = event.target as HTMLInputElement
+    if (!target.files || target.files.length === 0) return
+
+    try {
+        const file = target.files?.[0]
+        if (!file) return
+
+        const res = await uploadFileService(file)
+
+        if (res.code !== 1) {
+            ElMessage.error('头像上传失败')
+            return
+        }
+
+        const avatarUrl = res.msg
+
+        await userUpdateService({
+            userImg: avatarUrl
+        })
+
+        if (userInfo.value) {
+            userInfo.value.userImg = avatarUrl
+        }
+
+        ElMessage.success('头像修改成功')
+    } catch (err) {
+        ElMessage.error('头像修改失败')
+        console.error(err)
+    } finally {
+        target.value = ''
+    }
+}
+
+/**
+ * 获取用户信息
+ */
 const getInfo = async () => {
     try {
         const res = await userInfoService()
@@ -46,13 +94,21 @@ onMounted(() => {
             <el-avatar
                 :src="userInfo?.userImg || defaultAvatar"
                 size="large"
+                class="avatar"
+                @click="avatarInput?.click()"
             ></el-avatar>
+            <input
+                type="file"
+                ref="avatarInput"
+                style="display:none"
+                accept="image/*"
+                @change="handleAvatarChange"
+            />
             <div class="user-info">
                 <div class="username">{{ userInfo?.userName || '昵称' }}</div>
                 <div class="userid">账号: {{ userInfo?.userId || '--' }}</div>
             </div>
         </el-header>
-
         <!-- 主体 -->
         <el-main class="profile-main">
             <el-row class="my-order">
@@ -67,9 +123,9 @@ onMounted(() => {
                             <i class="fa fa-sticky-note"></i>
                             <div>待收货</div>
                         </div>
-                        <div>
+                        <div style="cursor: pointer" @click="goAddress">
                             <i class="fa fa-location-arrow"></i>
-                            <div @click="goAddress">地址</div>
+                            <div>地址</div>
                         </div>
                         <div>
                             <i class="fa fa-user"></i>
@@ -78,12 +134,13 @@ onMounted(() => {
                     </div>
                 </el-card>
             </el-row>
-
             <!-- 退出登录按钮 -->
             <div class="logout-button" @click="logout">
                 退出登录
             </div>
         </el-main>
+
+
     </el-container>
 </template>
 

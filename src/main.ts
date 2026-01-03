@@ -10,11 +10,12 @@ import 'element-plus/dist/index.css'
 import { createPinia } from 'pinia'
 import { createPersistedState } from "pinia-plugin-persistedstate"
 
-import "./assets/main.scss"
+import "./assets/css/main.scss"
 import "normalize.css"
 import "@/assets/css/global.css"
 import "font-awesome/css/font-awesome.min.css"
 import "font-awesome/css/font-awesome.css"
+
 
 const app = createApp(App)
 const pinia = createPinia()

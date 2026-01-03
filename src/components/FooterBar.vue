@@ -11,7 +11,6 @@ const goHistoryOrder = () => {
     router.push('/order')
 }
 
-// 这里可以处理用户点击我的页面的逻辑，比如跳转登录或个人主页
 const goProfile = () => {
     console.log('跳转我的页面')
     router.push('/profile')
@@ -39,46 +38,46 @@ const goProfile = () => {
     </div>
 </template>
 
-<style scoped>
-/*底部样式*/
+<style lang="scss" scoped>
+$footer-height: 12%;
+$icon-font-size: 1.8rem;
+$text-font-size: 1rem;
+$base-padding: 2%;
+$side-padding: 1%;
+$border-color: #656464;
+$text-color: #656464;
+
 .footer {
     width: 100%;
     display: flex;
-    height: 12vw;
+    height: $footer-height;
     align-items: center;
     justify-content: space-around;
     background-color: #ffffff;
-    border-top: 2px solid #656464;
-
+    border-top: 2px solid $border-color;
     position: fixed;
     left: 0;
     bottom: 0;
-}
-
-
-.footer div {
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-content: center;
-    justify-content: center;
-    color: #656464;
-    padding-top: 2vw;
-}
-
-.footer >div:nth-child(1) {
-    padding-left: 1vw;
-}
-
-.footer >div:nth-child(4) {
-    padding-right: 1vw;
-}
-
-.footer i {
-    font-size: 4.5vw;
-}
-
-.footer p {
-    font-size: 2.5vw;
+    div {
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: $text-color;
+        padding-top: $base-padding;
+        &:nth-child(1) {
+            padding-left: $side-padding;
+        }
+        &:nth-child(4) {
+            padding-right: $side-padding;
+        }
+        i {
+            font-size: $icon-font-size;
+        }
+        p {
+            font-size: $text-font-size;
+        }
+    }
 }
 </style>

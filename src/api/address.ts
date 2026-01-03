@@ -55,6 +55,8 @@ export const addressChangeByIdService = (address: Address): Promise<ApiResponse>
     return request.put("/user/address", address)
 }
 
-
+export const addressGetCurrentService = (position: string): Promise<ApiResponse> => {
+    return request.get("/user/address/api/" + position)
+}
 
 

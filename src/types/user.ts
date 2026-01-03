@@ -2,8 +2,11 @@ export interface RegisterData {
     userId: string
     password: string
     rePassword: string
-    userName: string
-    userSex: number
+    
+    // 验证码
+    authInfo: string
+    // 验证码前缀
+    authKey: string
 }
 
 export interface LoginData {
@@ -16,4 +19,17 @@ export interface UserInfo {
     userName: string
     userSex: 0 | 1
     userImg: string
+}
+
+export interface UserUpdate {
+    userName?: string
+    userSex?: number
+    userImg?: string
+}
+
+export interface UserAuth {
+    // 验证码
+    authInfo: string
+    // 验证码前缀
+    authKey: string
 }

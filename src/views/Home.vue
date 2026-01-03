@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import FooterBar from "@/components/FooterBar.vue";
 import {useRouter} from "vue-router";
-import { ref, onMounted, onUnmounted } from "vue";
+import {ref, onMounted, computed} from "vue";
 import {useBusinessStore} from "@/store/business.ts";
 import type {FoodType} from "@/types/foodType.ts";
 import {foodTypeService} from "@/api/foodType.ts";
+import {useAddressStore} from "@/store/address.ts";
 
+
+const addressStore = useAddressStore();
 const foodType = ref<FoodType[]>([])
 const businessStore = useBusinessStore()
 
@@ -13,28 +16,21 @@ const businessStore = useBusinessStore()
 const searchRef = ref<HTMLElement | null>(null)
 const router = useRouter();
 
-// 滚动处理函数
-const handleScroll = () => {
-    console.log('scroll triggered')
-    // 兼容 PC / 移动端
-    const s1 = document.documentElement.scrollTop
-    const s2 = document.body.scrollTop
-    const scroll = s1 === 0 ? s2 : s1
+// 定义经纬度
+const defaultPosition = ref<string>("116.481488,39.990464")
 
-    const width = document.documentElement.clientWidth
+// 处理搜索
+const searchKey = ref<string>("") // 默认空字符串
 
-    console.log(searchRef.value)
-    if (searchRef.value) {
-        if (scroll >= 0.12 * width) {
-            searchRef.value.style.position = 'fixed'
-            searchRef.value.style.left = '0'
-            searchRef.value.style.top = '20vw'
-            searchRef.value.style.zIndex = '10000'
-        } else {
-            searchRef.value.style.position = 'static'
-        }
-    }
-}
+// 搜索商家
+const filteredBusiness = computed(() => {
+    const key = searchKey.value.trim().toLowerCase()
+    if (!key) return businessStore.businessList
+    return businessStore.businessList.filter(b =>
+        b.businessName.toLowerCase().includes(key)
+    )
+})
+
 
 const showFoodType = (typeId: number) => {
     router.push(`/list/${typeId}`)
@@ -57,18 +53,40 @@ const getImgUrl = (baseUrl: String) => {
     return new URL(`../assets/img/${baseUrl}`, import.meta.url).href
 }
 
+const goInfo = (businessId: number) => {
+    router.push(`/info/${businessId}`)
+}
 
 onMounted(() => {
-    window.addEventListener('scroll', handleScroll)
     businessStore.getBusinessList()
     getFoodTypes()
-})
+    AMap.plugin('AMap.Geolocation', () => {
+        const geolocation = new AMap.Geolocation({
+            enableHighAccuracy: true,
+            timeout: 20000,
+            maximumAge: 0,
+            convert: true
+        })
 
-// 卸载时移除（非常重要）
-onUnmounted(() => {
-    window.removeEventListener('scroll', handleScroll)
-})
+        geolocation.getCurrentPosition(
+            (status: string, result: any) => {
+                if (status === 'complete') {
+                    console.log('高精度定位成功')
+                    console.log(result.position.lng, result.position.lat)
 
+                    const position = result.position.lng+','+result.position.lat
+
+                    console.log(typeof position)
+                    addressStore.getCurrentAddress(position)
+                } else {
+                    console.warn('高精度失败', result.message)
+                    addressStore.getCurrentAddress(defaultPosition.value)
+                }
+            }
+        )
+    })
+
+})
 </script>
 
 <template>
@@ -78,7 +96,7 @@ onUnmounted(() => {
                 <div class='icon-location'></div>
             </div>
             <div class="location-text">
-                云南大学呈贡校区力行楼<i style="margin-left: 0.2vw" class="fa fa-caret-down"></i>
+                {{ addressStore.currentAddress }}<i style="margin-left: 0.2vw" class="fa fa-caret-down"></i>
             </div>
         </div>
         <div class="search" ref="searchRef">
@@ -86,7 +104,7 @@ onUnmounted(() => {
                 <div class='search-panel'>
                     <i class="fa fa-search" style="flex: 0 0 6vw;padding-left: 8px;padding-right: 3px"></i>
                     <input id="keyWords" type="text" placeholder="请输入要查询的内容"
-                           style="flex: 10;outline: none; border: none;color: #9f9f9f">
+                           style="flex: 10;outline: none; border: none;color: #9f9f9f" v-model="searchKey">
                     <div class="search-button" style="flex: 0 0 17vw;">搜索</div>
                 </div>
             </div>
@@ -111,7 +129,7 @@ onUnmounted(() => {
 
         <div class="member">
             <div class="left">
-                <img src="@/assets/img/super_member.png" height="45" width="45">
+                <img src="@/assets/img/super_member.png" height="45" width="45" alt="">
                 <h3 class="h3Title">&nbsp;&nbsp; 超级会员&nbsp;&nbsp;</h3>
                 <p class="bannerText">&#8226;&nbsp;&nbsp;每月享超值权益</p>
             </div>
@@ -133,9 +151,10 @@ onUnmounted(() => {
 
         <div class="businessList">
             <div class="business"
-                 v-for="business in businessStore.businessList"
-                 :key="business.businessId">
-                <img :src="business.businessImg">
+                 v-for="business in filteredBusiness"
+                 :key="business.businessId"
+                 @click="goInfo(business.businessId)">
+                <img :src="business.businessImg" alt="">
 
                 <div class="businessInfo">
                     <div class="businessTitle">
@@ -206,6 +225,7 @@ onUnmounted(() => {
     align-items: center;
     /*overflow: auto;*/
     margin: 0;
+    position: relative;
 }
 
 /*头部样式*/
@@ -253,6 +273,9 @@ onUnmounted(() => {
 .search {
     width: 100%;
     height: 10vw;
+
+    position: sticky;
+    top: 0;
     /*position: sticky;*/
     /*top: 0;*/
     /*z-index: 10;*/
@@ -269,6 +292,7 @@ onUnmounted(() => {
     height: 10vw;
     justify-content: center;
     background-color: white;
+
     /*align-items: center;*/
 }
 

@@ -1,13 +1,13 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import type { BusinessInfo } from '@/types/business'
-import { businessInfoService } from '@/api/business'
+import {defineStore} from 'pinia'
+import {ref} from 'vue'
+import type {BusinessInfo} from '@/types/business'
+import {businessInfoService} from '@/api/business'
 
 export const useBusinessStore = defineStore('business', () => {
     // 状态
     const businessList = ref<BusinessInfo[]>([])
+    const currentBusiness = ref<BusinessInfo>()
     const loading = ref(false)
-    
     // 获取商家列表
     const getBusinessList = async () => {
         if (businessList.value.length > 0) return // 防止重复请求
@@ -28,10 +28,11 @@ export const useBusinessStore = defineStore('business', () => {
         return businessList.value.filter(b => b.orderTypeId === typeId)
     }
     
+    // 获取指定商家
     const getByBusinessId = (businessId: number) => {
-        return businessList.value.filter(b => b.businessId === businessId)[0]
+        currentBusiness.value = businessList.value.filter(b => b.businessId === businessId)[0]
     }
-    
+
     // 清空（登出用）
     const removeBusiness = () => {
         businessList.value = []
@@ -39,6 +40,7 @@ export const useBusinessStore = defineStore('business', () => {
     
     return {
         businessList,
+        currentBusiness,
         loading,
         getBusinessList,
         getByType,
